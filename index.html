@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国語 運転免許 単語帳</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Noto Sans JP', 'Noto Sans SC', sans-serif;
+            background-color: #f3f4f6;
+        }
+        /* カードのアニメーション */
+        .card-enter {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .card-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 300ms, transform 300ms;
+        }
+        .card-exit {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .card-exit-active {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 300ms, transform 300ms;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- サンプルデータ (10 問) ---
+        const vocabularyData = [
+            {
+                id: 1,
+                imageUrl: "https://placehold.co/400x300/e2e8f0/1e293b?text=Traffic+Light",
+                chinese: "红绿灯",
+                pinyin: "hóng lǜ dēng",
+                japanese: "信号機",
+                english: "Traffic light"
+            },
+            {
+                id: 2,
+                imageUrl: "https://placehold.co/400x300/e2e8f0/1e293b?text=Seat+Belt",
+                chinese: "安全带",
+                pinyin: "ān quán dài",
+                japanese: "シートベルト",
+                english: "Seat belt"
+            },
+            {
+                id: 3,
+                imageUrl: "https://placehold.co/400x300/e2e8f0/1e293b?text=No+Overtaking",
+                chinese: "禁止超车",
+                pinyin: "jìn zhǐ chāo chē",
+                japanese: "追い越し禁止",
+                english: "No overtaking"
+            },
+            {
+                id: 4,
+                imageUrl: "https://placehold.co/400x300/e2e8f0/1e293b?text=Intersection",
+                chinese: "十字路口",
+                pinyin: "shí zì lù kǒu",
+                japanese: "十字路 / 交差点",
+                english: "Intersection / Crossroads"
+            },
+            {
+                id: 5,
+                imageUrl: "https://placehold.co/400x300/e2e8f0/1e293b?text=Stop+Sign",
+                chinese: "停车让行",
+                pinyin: "tíng chē ràng xíng",
+                japanese: "一時停止",
+                english: "Stop / Give way"
+            },
+            {
+                id: 6,
+                imageUrl: "https://placehold.co/400x300/e2e8f0/1e293b?text=Speed+Limit",
+                chinese: "限速",
+                pinyin: "xiàn sù",
+                japanese: "速度制限",
+                english: "Speed limit"
+            },
+            {
+                id: 7,
+                imageUrl: "https://placehold.co/400x300/e2e8f0/1e293b?text=One+Way",
+                chinese: "单行道",
+                pinyin: "dān xíng dào",
+                japanese: "一方通行",
+                english: "One-way street"
+            },
+            {
+                id: 8,
+                imageUrl: "https://placehold.co/400x300/e2e8f0/1e293b?text=Pedestrian",
+                chinese: "人行横道",
+                pinyin: "rén xíng héng dào",
+                japanese: "横断歩道",
+                english: "Crosswalk / Zebra crossing"
+            },
+            {
+                id: 9,
+                imageUrl: "https://placehold.co/400x300/e2e8f0/1e293b?text=No+Parking",
+                chinese: "禁止停车",
+                pinyin: "jìn zhǐ tíng chē",
+                japanese: "駐車禁止",
+                english: "No parking"
+            },
+            {
+                id: 10,
+                imageUrl: "https://placehold.co/400x300/e2e8f0/1e293b?text=Turn+Left",
+                chinese: "左转",
+                pinyin: "zuǒ zhuǎn",
+                japanese: "左折",
+                english: "Turn left"
+            }
+        ];
+
+        // --- アイコンコンポーネント ---
+        const SpeakerIcon = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            </svg>
+        );
+
+        const ChevronLeftIcon = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        );
+
+        const ChevronRightIcon = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+        );
+
+        // --- メインアプリコンポーネント ---
+        const App = () => {
+            const [currentIndex, setCurrentIndex] = useState(0);
+            const [isAnimating, setIsAnimating] = useState(false);
+
+            const currentWord = vocabularyData[currentIndex];
+
+            // 音声読み上げ機能
+            const handleSpeak = () => {
+                if ('speechSynthesis' in window) {
+                    // 既存の音声をキャンセル
+                    window.speechSynthesis.cancel();
+
+                    const utterance = new SpeechSynthesisUtterance(currentWord.chinese);
+                    utterance.lang = 'zh-CN'; // 中国語設定
+                    utterance.rate = 0.9; // 少しゆっくりに
+                    utterance.pitch = 1;
+                    
+                    window.speechSynthesis.speak(utterance);
+                } else {
+                    alert("お使いのブラウザは音声合成に対応していません。");
+                }
+            };
+
+            // カード切り替え処理
+            const changeCard = (direction) => {
+                if (isAnimating) return;
+                setIsAnimating(true);
+
+                setTimeout(() => {
+                    if (direction === 'next') {
+                        setCurrentIndex((prev) => (prev + 1) % vocabularyData.length);
+                    } else {
+                        setCurrentIndex((prev) => (prev - 1 + vocabularyData.length) % vocabularyData.length);
+                    }
+                    setIsAnimating(false);
+                }, 300); // アニメーション時間と合わせる
+            };
+
+            // キーボード操作対応
+            useEffect(() => {
+                const handleKeyDown = (e) => {
+                    if (e.key === 'ArrowRight') changeCard('next');
+                    if (e.key === 'ArrowLeft') changeCard('prev');
+                    if (e.key === ' ' || e.key === 'Enter') handleSpeak();
+                };
+                window.addEventListener('keydown', handleKeyDown);
+                return () => window.removeEventListener('keydown', handleKeyDown);
+            }, [currentIndex, isAnimating]);
+
+            return (
+                <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-100">
+                    
+                    {/* ヘッダー */}
+                    <header className="w-full max-w-md mb-6 flex justify-between items-center">
+                        <h1 className="text-xl font-bold text-gray-800">🚗 中国語 運転免許 単語帳</h1>
+                        <span className="text-sm font-medium text-gray-500 bg-white px-3 py-1 rounded-full shadow-sm">
+                            {currentIndex + 1} / {vocabularyData.length}
+                        </span>
+                    </header>
+
+                    {/* フラッシュカード本体 */}
+                    <main className="w-full max-w-md relative perspective-1000">
+                        <div 
+                            className={`bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 transform ${
+                                isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+                            }`}
+                            style={{ minHeight: '500px' }}
+                        >
+                            {/* 1. 画像エリア (Aspect Ratio 固定で崩れ防止) */}
+                            <div className="w-full aspect-[4/3] bg-gray-200 relative overflow-hidden group">
+                                <img 
+                                    src={currentWord.imageUrl} 
+                                    alt={currentWord.japanese}
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                    loading="lazy"
+                                />
+                                {/* 画像右上に TTS ボタンをオーバーレイ */}
+                                <button 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleSpeak();
+                                    }}
+                                    className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-md text-blue-600 hover:bg-blue-600 hover:text-white transition-colors active:scale-95"
+                                    title="音声を再生"
+                                >
+                                    <SpeakerIcon />
+                                </button>
+                            </div>
+
+                            {/* 2. テキスト情報エリア */}
+                            <div className="p-6 flex flex-col items-center text-center space-y-4">
+                                
+                                {/* 中国語 (最も大きく) */}
+                                <div>
+                                    <h2 className="text-4xl font-bold text-gray-900 tracking-wide">
+                                        {currentWord.chinese}
+                                    </h2>
+                                </div>
+
+                                {/* ピン音 (声調記号付き) */}
+                                <div>
+                                    <p className="text-lg text-blue-600 font-medium font-sans">
+                                        {currentWord.pinyin}
+                                    </p>
+                                </div>
+
+                                {/* 区切り線 */}
+                                <div className="w-12 h-1 bg-gray-200 rounded-full"></div>
+
+                                {/* 日本語の意味 */}
+                                <div>
+                                    <p className="text-sm text-gray-500 uppercase tracking-wider mb-1">Japanese</p>
+                                    <p className="text-xl text-gray-800 font-semibold">
+                                        {currentWord.japanese}
+                                    </p>
+                                </div>
+
+                                {/* 英語の意味 */}
+                                <div>
+                                    <p className="text-sm text-gray-500 uppercase tracking-wider mb-1">English</p>
+                                    <p className="text-lg text-gray-600">
+                                        {currentWord.english}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ナビゲーションボタン (カードの下に配置) */}
+                        <div className="flex justify-between items-center mt-6 gap-4">
+                            <button 
+                                onClick={() => changeCard('prev')}
+                                className="flex-1 flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 py-3 px-4 rounded-xl font-medium shadow-sm hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                            >
+                                <ChevronLeftIcon />
+                                <span>前へ</span>
+                            </button>
+                            
+                            <button 
+                                onClick={() => changeCard('next')}
+                                className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white py-3 px-4 rounded-xl font-medium shadow-md hover:bg-blue-700 active:bg-blue-800 transition-colors"
+                            >
+                                <span>次へ</span>
+                                <ChevronRightIcon />
+                            </button>
+                        </div>
+                        
+                        <p className="text-center text-xs text-gray-400 mt-4">
+                            スピーカーアイコンで発音を確認 / 矢印キーで操作可能
+                        </p>
+                    </main>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
